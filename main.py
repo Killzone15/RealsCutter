@@ -2,7 +2,7 @@ from moviepy.editor import VideoFileClip
 import os
 
 
-def split_video_for_shorts(file_path, clip_duration=32):
+def split_video_for_shorts(file_path, clip_duration=30):
     video = VideoFileClip(file_path)
     total_duration = int(video.duration)
     filename, _ = os.path.splitext(os.path.basename(file_path))
@@ -14,16 +14,19 @@ def split_video_for_shorts(file_path, clip_duration=32):
 
     for i in range(total_clips):
         start = i * clip_duration
-        end = min(start + clip_duration, total_duration)
+        # Если это последний кусок — режем точно до конца
+        if i == total_clips - 1:
+            end = video.duration
+        else:
+            end = min(start + clip_duration, total_duration)
 
-        # Применяем прямое использование ffmpeg для нарезки
         output_filename = f"{i + 1:03}.mp4"
         output_path = os.path.join(output_folder, output_filename)
 
-        # Используем метод ffmpeg для нарезки
+        # Нарезка и сохранение
         video.subclip(start, end).write_videofile(output_path, codec="libx264", audio_codec="aac", logger=None)
 
-        print(f"🔪 Нарезка: {output_filename} ({start}–{end} сек)")
+        print(f"🔪 Нарезка: {output_filename} ({start:.2f}–{end:.2f} сек)")
 
     print(f"\n✅ Готово! Файлы сохранены в: {output_folder}")
 
